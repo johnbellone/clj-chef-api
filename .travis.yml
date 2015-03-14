@@ -1,0 +1,18 @@
+language: clojure
+script: lein test
+jdk:
+  - openjdk7
+  - oraclejdk7
+  - oraclejdk8
+branches:
+  only:
+    - master
+notifications:
+  irc:
+    channels: 
+      - "chat.freenode.net#bloomberg"
+    use_notice: true
+    template:
+      - "%{message} (%{author}): %{build_url}"
+  recipients:
+    - jbellone+travisci@bellone.us
