@@ -1,6 +1,8 @@
-(ns spoon.core-test
+(ns chef-api.core-test
   (:use clojure.test)
-  (:require [spoon.core :as spoon]))
+  (:require [chef-api.core :as api]))
+
+(deftest make-authentication-headers)
 
 (deftest request-header-user-agent
   (let [request (spoon/make-request :get "/")]
