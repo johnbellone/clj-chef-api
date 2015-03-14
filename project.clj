@@ -1,6 +1,6 @@
 (defproject com.bloomberg.platform/chef-api "0.1.0"
   :description "Chef API client written in Clojure."
-  :url "https://github.com/johnbellone/spoon"
+  :url "https://github.com/johnbellone/clj-chef-api"
   :license {:name "Apache 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :uberjar-name "chef-spoon.jar"
@@ -16,4 +16,5 @@
                  [clj-time "0.9.0"]
                  [http-kit "2.1.18"]]
   :profiles
-  {:uberjar {:aot :all}})
+  {:dev {}
+   :uberjar {:aot :all}})
