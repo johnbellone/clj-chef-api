@@ -7,7 +7,7 @@
             [environ.core :refer [env]]
             [pandect.algo.sha1 :as algo]))
 
-(def *default-headers*
+(def ^{:const true} default-headers
   {:Content-Type "application/json"
    :Accept "application/json"
    :X-Chef-Version "12.1.0"
@@ -15,21 +15,28 @@
 
 (def ^:dynamic chef-server-url (env :chef-server-url))
 
+(defn path->hashed-path [path]
+  (b64/encode (algo/sha1-bytes path)))
+
 (defn make-authorization-headers
-  [method hashed-path request-header]
-  (let [content-hash (:X-Content-Hash request-header)
+  [method request-header]
+  (let [path (:Path request-header)
+        content-hash (:X-Content-Hash request-header)
         timestamp (:X-Ops-Timestamp request-header)
         userid (:X-Ops-UserId request-header)
-        canonical-header (str "Method:" method \newline
-                              "Hashed Path:" hashed-path \newline
-      xo                        "X-Ops-Content-Hash:" content-hash \newline
-                              "X-Ops-Timestamp" timestamp \newline
-                              "X-Ops-UserId:" userid)]
-    (when-let [bytes (b64/encode (algo/sha1-bytes canonical-header))]
-      )))
+        headers (str "Method:" method \newline
+                     "Hashed Path:" (path->hashed-path path) \newline
+                     "X-Ops-Content-Hash:" content-hash \newline
+                     "X-Ops-Timestamp" timestamp \newline
+                     "X-Ops-UserId:" userid \newline)
+        bytes (b64/encode (algo/sha1-bytes headers))]
+    (loop [x 0 num-headers (/ (alen bytes) 59)]
+      (str headers
+           "X-Ops-Authorization-" (+ x 1) ":" \newline))
+    headers))
 
 (defn make-authentication-headers [client-name client-key & options]
-  (let [headers (or (:headers options) *default-headers*)
+  (let [headers (or (:headers options) default-headers)
         signing-key (slurp client-key)
         method (:method options)
         host (:host options)
@@ -38,7 +45,13 @@
     (headers :X-Chef-UserId client-name)
     (headers :X-Ops-Timestamp time/now)
     (headers :X-Content-Hash (b64/encode (algo/sha1-bytes body)))
-    (headers :X-Authorization)))
+    (headers :X-Authorization)
+    (make-authorization-headers method )))
+
+(defn make-request [method endpoint]
+  (http/request {:url (str chef-server-url endpoint)
+                 :method method
+                 :keepalive 1000}))
 
 (defmacro with-chef-server [new-chef-server & body]
   `(binding [chef-server-url ~new-chef-server]
