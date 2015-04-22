@@ -1,2 +1,5 @@
 source 'https://supermarket.chef.io'
-cookbook 'chef-server-cluster'
+
+group :test, :development do
+  cookbook 'chef-server'
+end
