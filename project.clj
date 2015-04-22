@@ -1,4 +1,4 @@
-(defproject com.bloomberg.platform/chef-api "0.1.0"
+(defproject com.bloomberg.infrastructure/chef-api "0.1.0"
   :description "Chef API client written in Clojure."
   :url "https://github.com/johnbellone/clj-chef-api"
   :license {:name "Apache 2.0"
@@ -16,5 +16,5 @@
                  [clj-time "0.9.0"]
                  [http-kit "2.1.18"]]
   :profiles
-  {:dev {}
+  {:dev {:env {:chef-server-url "https://127.0.0.1:8443/"}}
    :uberjar {:aot :all}})
