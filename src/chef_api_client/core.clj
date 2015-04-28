@@ -1,4 +1,4 @@
-(ns chef-api.core
+(ns chef-api-client.core
   (:require [cheshire.core :as json]
             [org.httpkit.client :as http]
             [clj-time.core :as time]
@@ -45,7 +45,6 @@
     (headers :X-Chef-UserId client-name)
     (headers :X-Ops-Timestamp time/now)
     (headers :X-Content-Hash (b64/encode (algo/sha1-bytes body)))
-    (headers :X-Authorization)
     (make-authorization-headers method )))
 
 (defn make-request [method endpoint]

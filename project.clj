@@ -1,9 +1,9 @@
-(defproject com.bloomberg.infrastructure/chef-api "0.1.0"
+(defproject com.bloomberg.infrastructure/chef-api-client "0.1.0"
   :description "Chef API client written in Clojure."
-  :url "https://github.com/johnbellone/clj-chef-api"
+  :url "https://github.com/johnbellone/clj-chef-api-client"
   :license {:name "Apache 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :uberjar-name "chef-spoon.jar"
+  :uberjar-name "chef-api-client.jar"
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/tools.cli "0.3.1"]
                  [org.clojure/tools.logging "0.3.1"]

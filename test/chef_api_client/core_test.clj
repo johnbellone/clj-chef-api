@@ -1,6 +1,6 @@
-(ns chef-api.core-test
+(ns chef-api-client.core-test
   (:use clojure.test)
-  (:require [chef-api.core :as api]))
+  (:require [chef-api-client.core :as api]))
 
 (deftest make-authentication-headers)
 
