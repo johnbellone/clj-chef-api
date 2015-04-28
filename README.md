@@ -1,4 +1,4 @@
-# clj-chef-api
+# clj-chef-api-client
 [Chef API][1] client written in [Clojure][2].
 
 [1]: https://chef.io
