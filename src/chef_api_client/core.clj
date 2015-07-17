@@ -6,7 +6,30 @@
     [clj-crypto.core :as crypto]
     [clojure.data.codec.base64 :as b64]
     [environ.core :refer [env]]
-    [pandect.algo.sha1 :as algo]))
+    [pandect.algo.sha1 :as algo])
+  (:import
+    [org.bouncycastle.jce.provider BouncyCastleProvider]
+    [org.bouncycastle.openssl PEMParser]
+    [org.bouncycastle.crypto.util PublicKeyFactory PrivateKeyFactory]))
+
+;;; BC Crypto
+
+(defn init-crypto []
+  (java.security.Security/addProvider (BouncyCastleProvider.)))
+
+(defn- read-key [path]
+  (-> path (java.io.FileReader.) (PEMParser.) (.readObject))) 
+
+(defn- pem->bc-pub-key
+  [path]
+  (-> (read-key path) (.getPublicKeyInfo) (PublicKeyFactory/createKey))) 
+
+(defn pem->jce-pub-key
+  [path]
+  (let [{:keys [exponent modulus]} (into {} (seq (bean (pem->bc-pub-key path))))
+        factory (java.security.KeyFactory/getInstance "RSA")
+        spec (java.security.spec.RSAPublicKeySpec. modulus exponent)]
+    (.generatePublic factory spec)))
 
 ;;; Hash/Encoding utilities
 
@@ -60,7 +83,7 @@
              "X-Ops-Content-Hash:" X-Ops-Content-Hash \newline
              "X-Ops-Timestamp" X-Ops-Timestamp \newline
              "X-Ops-UserId:" X-Ops-UserId \newline)]
-    (x-ops-auth (hmac-sha canonical-headers secret-key))))
+    (split-x-auth (hmac-sha canonical-headers secret-key))))
 
 ;; (defn make-request-headers
 ;;   "Return"
