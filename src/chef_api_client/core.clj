@@ -1,68 +1,11 @@
 (ns chef-api-client.core
   (:require
+	[clojure.string :as str]
     [cheshire.core :as json]
     [org.httpkit.client :as http]
     [clj-time.core :as time]
-    [clj-crypto.core :as crypto]
-    [clojure.data.codec.base64 :as b64]
     [environ.core :refer [env]]
-    [pandect.algo.sha1 :as algo])
-  (:import
-	[javax.crypto Cipher]
-    [org.bouncycastle.jce.provider BouncyCastleProvider]
-    [org.bouncycastle.openssl PEMParser]
-    [org.bouncycastle.crypto.util PrivateKeyFactory]))
-
-;;; Hash/Encoding utilities
-
-(def ^{:arglists '([^bytes buffer])
-       :doc "Encode base64 encoded byte-array as a UTF-8 string."
-       :private true
-       :nodoc true}
-  b64-string
-  (comp #(String. % "UTF-8") b64/encode))
-
-(def ^{:arglists '([^String value secret-key])
-       :doc "Return a base64 encoded hmac-sha1 token from value. Signed with
-            secret-key."
-       :private true
-       :nodoc true}
-  hmac-sha
-  (comp b64-string algo/sha1-hmac-bytes))
-
-(def ^{:arglists '([^String value])
-       :doc "Return a base64 encoded string SHA1 digest from value."
-       :private true
-       :nodoc true}
-  digest
-  (comp b64-string algo/sha1-bytes))
-
-;;; BC Crypto
-
-(defn init-crypto []
-  (java.security.Security/addProvider (BouncyCastleProvider.)))
-
-(defn- pem->bc-pkey
-  [path]
-  (-> path
-	  (java.io.FileReader.)
-	  (PEMParser.)
-	  (.readObject)
-	  (.getPrivateKeyInfo)
-	  (PrivateKeyFactory/createKey)))
-
-(defn pem->jce-pkey
-  [path]
-  (let [{:keys [exponent modulus]} (into {} (seq (bean (pem->bc-pkey path))))
-        factory (java.security.KeyFactory/getInstance "RSA")
-        spec (java.security.spec.RSAPrivateKeySpec. modulus exponent)]
-    (.generatePrivate factory spec)))
-
-(defn encrypt
-  [data pkey]
-  (let [cipher (doto (Cipher/getInstance "RSA/ECB/PKCS1Padding" "BC")
-				 (.init Cipher/ENCRYPT_MODE pkey))]
-	(.doFinal cipher data)))
+	[chef-api-client.util.crypto :as crypto]))
 
 ;;; Creating requests
 
@@ -88,11 +31,13 @@
     :as request-headers}]
   (let [canonical-headers
         (str "Method:" method \newline
-             "Hashed Path:" (digest Path) \newline
+             "Hashed Path:" (crypto/digest Path) \newline
              "X-Ops-Content-Hash:" X-Ops-Content-Hash \newline
              "X-Ops-Timestamp" X-Ops-Timestamp \newline
              "X-Ops-UserId:" X-Ops-UserId \newline)]
-    (split-x-auth (hmac-sha canonical-headers secret-key))))
+    (split-x-auth (-> canonical-headers
+					  (crypto/encrypt secret-key)
+					  (str/trim-newline)))))
 
 ;; (defn make-request-headers
 ;;   "Return"
