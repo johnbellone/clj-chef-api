@@ -26,34 +26,41 @@
 
 (defn make-authorization-headers
   [method secret-key
-   {:keys [Path X-Ops-Content-Hash X-Ops-Timestamp X-Ops-UserId]
-    :or {Path "/"}
+   {path    :Path
+	content :X-Ops-Content-Hash
+	time    :X-Ops-Timestamp
+	user    :X-Ops-UserId
+    :or {path "/"}
     :as request-headers}]
   (let [canonical-headers
         (str "Method:" method \newline
-             "Hashed Path:" (crypto/digest Path) \newline
-             "X-Ops-Content-Hash:" X-Ops-Content-Hash \newline
-             "X-Ops-Timestamp" X-Ops-Timestamp \newline
-             "X-Ops-UserId:" X-Ops-UserId \newline)]
+             "Hashed Path:" (crypto/digest path) \newline
+             "X-Ops-Content-Hash:" content \newline
+             "X-Ops-Timestamp" time \newline
+             "X-Ops-UserId:" user \newline)]
     (split-x-auth (-> canonical-headers
 					  (crypto/encrypt secret-key)
 					  (str/trim-newline)))))
 
-;; (defn make-request-headers
-;;   "Return"
-;;   [client-name client-key & options]
-;;   (let [headers (or (:headers options) *default-headers*)
-;;         signing-key (slurp client-key)
-;;         method (clojure.string/upper-case (:method options))
-;;         host (:host options)
-;;         body (:body options)]
-;;     (when host (headers :Host host))
-;;     (headers :X-Chef-UserId client-name)
-;;     (headers :X-Ops-Timestamp time/now)
-;;     (headers :X-Content-Hash (digest body))
-;;     (reduce merge headers
-;;             (make-authorization-headers method signing-key headers))))
-;;
+(defn make-request-headers
+  [client-name client-key & [options]]
+  (let [headers (or (:headers options) default-headers)
+		signing-key (crypto/read-pem client-key)
+		method (str/upper-case (:method options))
+		host (:host options)
+		body (:body options)]
+	(merge headers
+		   {:Host host
+			:X-Chef-UserId client-name
+			:X-Ops-Timestamp (time/now)
+			:X-Content-Hash (crypto/digest body)}
+		   (make-authorization-headers method signing-key headers))))
+
+(defn inspect-headers
+  [m]
+  (doall (for [[k v] (sort-by first m)]
+		   (println (format "%s: %s" (name k) v)))) nil)
+
 ;; (def ^:dynamic *chef-server-url* (env :chef-server-url))
 ;;
 ;; (defmacro with-chef-server [new-chef-server & body]
