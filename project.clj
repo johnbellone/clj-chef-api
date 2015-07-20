@@ -17,8 +17,8 @@
                  [http-kit "2.1.18"]
 
                  [org.bouncycastle/bctsp-jdk15on "1.46"
-                    :exclusions [org.bouncycastle/bcmail-jdk15onb]
+                    :exclusions [org.bouncycastle/bcmail-jdk15onb]]
                  [org.bouncycastle/bcpkix-jdk15on "1.52"]]
   :profiles
-  {:dev {:env {:chef-server-url "https://127.0.0.1:8443/"}}
-   :uberjar {:aot :all}})
+    {:dev     {:env {:chef-server-url "https://127.0.0.1:8443/"}}
+     :uberjar {:aot :all}})

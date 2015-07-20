@@ -8,28 +8,10 @@
     [environ.core :refer [env]]
     [pandect.algo.sha1 :as algo])
   (:import
+	[javax.crypto Cipher]
     [org.bouncycastle.jce.provider BouncyCastleProvider]
     [org.bouncycastle.openssl PEMParser]
-    [org.bouncycastle.crypto.util PublicKeyFactory PrivateKeyFactory]))
-
-;;; BC Crypto
-
-(defn init-crypto []
-  (java.security.Security/addProvider (BouncyCastleProvider.)))
-
-(defn- read-key [path]
-  (-> path (java.io.FileReader.) (PEMParser.) (.readObject))) 
-
-(defn- pem->bc-pub-key
-  [path]
-  (-> (read-key path) (.getPublicKeyInfo) (PublicKeyFactory/createKey))) 
-
-(defn pem->jce-pub-key
-  [path]
-  (let [{:keys [exponent modulus]} (into {} (seq (bean (pem->bc-pub-key path))))
-        factory (java.security.KeyFactory/getInstance "RSA")
-        spec (java.security.spec.RSAPublicKeySpec. modulus exponent)]
-    (.generatePublic factory spec)))
+    [org.bouncycastle.crypto.util PrivateKeyFactory]))
 
 ;;; Hash/Encoding utilities
 
@@ -54,6 +36,33 @@
        :nodoc true}
   digest
   (comp b64-string algo/sha1-bytes))
+
+;;; BC Crypto
+
+(defn init-crypto []
+  (java.security.Security/addProvider (BouncyCastleProvider.)))
+
+(defn- pem->bc-pkey
+  [path]
+  (-> path
+	  (java.io.FileReader.)
+	  (PEMParser.)
+	  (.readObject)
+	  (.getPrivateKeyInfo)
+	  (PrivateKeyFactory/createKey)))
+
+(defn pem->jce-pkey
+  [path]
+  (let [{:keys [exponent modulus]} (into {} (seq (bean (pem->bc-pkey path))))
+        factory (java.security.KeyFactory/getInstance "RSA")
+        spec (java.security.spec.RSAPrivateKeySpec. modulus exponent)]
+    (.generatePrivate factory spec)))
+
+(defn encrypt
+  [data pkey]
+  (let [cipher (doto (Cipher/getInstance "RSA/ECB/PKCS1Padding" "BC")
+				 (.init Cipher/ENCRYPT_MODE pkey))]
+	(.doFinal cipher data)))
 
 ;;; Creating requests
 
