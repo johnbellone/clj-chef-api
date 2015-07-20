@@ -20,7 +20,7 @@
   string."
   [token]
   (letfn [(header-n [n s]
-            [(keyword (str "X-Ops-Authorization-" n))
+            [(keyword (str "X-Ops-Authorization-" (inc n)))
              (apply str s)])]
     (into {} (map-indexed header-n (partition-all 59 token)))))
 
@@ -44,16 +44,17 @@
 
 (defn make-request-headers
   [client-name client-key & [options]]
-  (let [headers (or (:headers options) default-headers)
-		signing-key (crypto/read-pem client-key)
+  (let [signing-key (crypto/read-pem client-key)
 		method (str/upper-case (:method options))
 		host (:host options)
-		body (:body options)]
+		body (:body options)
+		headers (merge default-headers
+				  (:headers options)
+				  {:Host host
+				   :X-Chef-UserId client-name
+				   :X-Ops-Timestamp (time/now)
+				   :X-Content-Hash (crypto/digest body)})]
 	(merge headers
-		   {:Host host
-			:X-Chef-UserId client-name
-			:X-Ops-Timestamp (time/now)
-			:X-Content-Hash (crypto/digest body)}
 		   (make-authorization-headers method signing-key headers))))
 
 (defn inspect-headers
