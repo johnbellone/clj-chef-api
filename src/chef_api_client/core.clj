@@ -1,66 +1,83 @@
 (ns chef-api-client.core
-  (:require [cheshire.core :as json]
-            [org.httpkit.client :as http]
-            [clj-time.core :as time]
-            [clj-crypto.core :as crypto]
-            [clojure.data.codec.base64 :as b64]
-            [environ.core :refer [env]]
-            [pandect.algo.sha1 :as algo]))
+  (:require
+    [clojure.string :as str]
+    [cheshire.core :as json]
+    [org.httpkit.client :as http]
+    [clj-time.core :as time]
+    [environ.core :refer [env]]
+    [chef-api-client.util.crypto :as crypto]))
 
-(def ^{:const true} *default-headers*
+;;; Creating requests
+
+(def default-headers
+  "Common headers that are the same with each request."
   {:Content-Type "application/json"
    :Accept "application/json"
    :X-Chef-Version "12.2.0"
    :X-Ops-Sign "algorithm=sha1;version=1.0;"})
 
-(def ^:dynamic *chef-server-url* (env :chef-server-url))
-
-(defn string->b64-sha1-hmac
-  "Return a base64 encoded sha1 hmac of value signed with secret-key."
-  [secret-key value]
-  (b64/encode (algo/sha1-hmac-bytes value secret-key)))
-
-(defn string->b64-hmac
-  "Return a base64 encoded sha1 bytes of value."
-  [value]
-  (b64/encode (algo/sha1-bytes value)))
+(defn split-x-auth
+  "Return a map of :X-Ops-Authorization-n headers from a single hmac token
+  string."
+  [token]
+  (letfn [(header-n [n s]
+            [(keyword (str "X-Ops-Authorization-" (inc n)))
+             (str/join s)])]
+    (into {} (map-indexed header-n (partition-all 59 token)))))
 
 (defn make-authorization-headers
-  [method secret-key request-header]
-  (let [hashed-path (string->b64-sha1 (:Path request-header))
-        content-hash (:X-Content-Hash request-header)
-        timestamp (:X-Ops-Timestamp request-header)
-        userid (:X-Ops-UserId request-header)
-        headers (str "Method:" method \newline
-                     "Hashed Path:" hashed-path \newline
-                     "X-Ops-Content-Hash:" content-hash \newline
-                     "X-Ops-Timestamp" timestamp \newline
-                     "X-Ops-UserId:" userid \newline)
-        bytes (string->b64-sha1-hmac headers secret-key)]
-    (map (fn [s n]
-           (assoc {} (symbol (str ":X-Ops-Authorization-" (inc n))) s))
-         (partition-all 59 bytes) (range))))
+  "Create the X-Ops-Autherization-N headers by signing the canonical header
+  information. Returns a map of the headers with these keys added."
+  [method secret-key
+   {path    :Path
+    content :X-Ops-Content-Hash
+    time    :X-Ops-Timestamp
+    user    :X-Ops-UserId
+    :or {path "/"}
+    :as request-headers}]
+  (let [canonical-headers
+        (str "Method:" method \newline
+             "Hashed Path:" (crypto/digest path) \newline
+             "X-Ops-Content-Hash:" content \newline
+             "X-Ops-Timestamp" time \newline
+             "X-Ops-UserId:" user \newline)]
+    (split-x-auth (-> canonical-headers
+                      (crypto/encrypt secret-key)
+                      (str/trim-newline)))))
 
 (defn make-request-headers
-  "Return"
-  [client-name client-key & options]
-  (let [headers (or (:headers options) *default-headers*)
-        signing-key (slurp client-key)
-        method (clojure.string/upper-case (:method options))
+  "Create the headers necessary for creating a new request to the chef rest
+  api."
+  [client-name client-key & [options]]
+  (let [signing-key (crypto/read-pem client-key)
+        method (str/upper-case (:method options))
         host (:host options)
-        body (:body options)]
-    (when host (headers :Host host))
-    (headers :X-Chef-UserId client-name)
-    (headers :X-Ops-Timestamp time/now)
-    (headers :X-Content-Hash (string->b64-sha1 body))
-    (reduce merge headers
-            (make-authorization-headers method signing-key headers))))
+        body (:body options)
+        headers (merge default-headers
+                       (:headers options)
+                       {:Host host
+                        :X-Chef-UserId client-name
+                        :X-Ops-Timestamp (time/now)
+                        :X-Content-Hash (crypto/digest body)})]
+    (merge headers
+           (make-authorization-headers method signing-key headers))))
 
-(defn make-request [method endpoint]
-  (http/request {:url (str *chef-server-url* endpoint)
-                 :method method
-                 :keepalive 1000}))
+(defn inspect-headers
+  "Print out the headers from the provided map. Formatted similar to how the
+  would appear in an actual http request."
+  [m]
+  (let [headers (sort-by first m)
+        print-header (fn [k v]
+                       (println (format "%s: %s" (name k) v)))]
+    (dorun (for [[k v] headers] (print-header k v)))))
 
-(defmacro with-chef-server [new-chef-server & body]
-  `(binding [chef-server-url ~new-chef-server]
-     ~@body))
+;; (def ^:dynamic *chef-server-url* (env :chef-server-url))
+;;
+;; (defmacro with-chef-server [new-chef-server & body]
+;;   `(binding [chef-server-url ~new-chef-server]
+;;      ~@body))
+;;
+;; (defn make-request [method endpoint]
+;;   (http/request {:url (str *chef-server-url* endpoint)
+;;                  :method method
+;;                  :keepalive 1000}))

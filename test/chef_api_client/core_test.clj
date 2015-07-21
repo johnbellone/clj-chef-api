@@ -5,10 +5,11 @@
 (deftest make-authentication-headers)
 
 (deftest request-header-user-agent
-  (let [request (spoon/make-request :get "/")]
+  #_(let [request (api/make-request :get "/")]
     (do (is (empty? (:query-params request)))
         (is (contains? (:headers request) "User-Agent"))
         (is (= (get (:headers request) "User-Agent") "Spoon")))))
+
 (deftest request-header-x-ops-sign)
 (deftest request-header-x-ops-userid)
 (deftest request-header-x-ops-timestamp)
