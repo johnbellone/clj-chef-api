@@ -10,6 +10,7 @@
 ;;; Creating requests
 
 (def default-headers
+  "Common headers that are the same with each request."
   {:Content-Type "application/json"
    :Accept "application/json"
    :X-Chef-Version "12.2.0"
@@ -25,6 +26,8 @@
     (into {} (map-indexed header-n (partition-all 59 token)))))
 
 (defn make-authorization-headers
+  "Create the X-Ops-Autherization-N headers by signing the canonical header
+  information. Returns a map of the headers with these keys added."
   [method secret-key
    {path    :Path
     content :X-Ops-Content-Hash
@@ -43,6 +46,8 @@
                       (str/trim-newline)))))
 
 (defn make-request-headers
+  "Create the headers necessary for creating a new request to the chef rest
+  api."
   [client-name client-key & [options]]
   (let [signing-key (crypto/read-pem client-key)
         method (str/upper-case (:method options))
@@ -58,6 +63,8 @@
            (make-authorization-headers method signing-key headers))))
 
 (defn inspect-headers
+  "Print out the headers from the provided map. Formatted similar to how the
+  would appear in an actual http request."
   [m]
   (let [headers (sort-by first m)
         print-header (fn [k v]
