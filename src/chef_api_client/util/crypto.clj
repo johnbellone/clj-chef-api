@@ -37,11 +37,11 @@
   "Internal: Extract private key from the OpenSSL pem file at the given path."
   [path]
   (-> path
-	  (java.io.FileReader.)
-	  (PEMParser.)
-	  (.readObject)
-	  (.getPrivateKeyInfo)
-	  (PrivateKeyFactory/createKey)))
+      (java.io.FileReader.)
+      (PEMParser.)
+      (.readObject)
+      (.getPrivateKeyInfo)
+      (PrivateKeyFactory/createKey)))
 
 (defn read-pem
   "Read private key from PEM file and convert to a form usable by JCE. Can be
@@ -60,9 +60,8 @@
   ;; chef-api-client.util.crypto-test/from-ruby for more details and the
   ;; corresponding Ruby snipit.
   (let [cipher (doto (Cipher/getInstance "RSA/ECB/PKCS1Padding" "BC")
-				 (.init Cipher/ENCRYPT_MODE pkey))]
+                 (.init Cipher/ENCRYPT_MODE pkey))]
     (-> s
         (.getBytes)
         (->> (.doFinal cipher))
         b64-string)))
-
