@@ -21,7 +21,7 @@
   [token]
   (letfn [(header-n [n s]
             [(keyword (str "X-Ops-Authorization-" (inc n)))
-             (apply str s)])]
+             (str/join s)])]
     (into {} (map-indexed header-n (partition-all 59 token)))))
 
 (defn make-authorization-headers
@@ -59,8 +59,10 @@
 
 (defn inspect-headers
   [m]
-  (doall (for [[k v] (sort-by first m)]
-           (println (format "%s: %s" (name k) v)))) nil)
+  (let [headers (sort-by first m)
+        print-header (fn [k v]
+                       (println (format "%s: %s" (name k) v)))]
+    (dorun (for [[k v] headers] (print-header k v)))))
 
 ;; (def ^:dynamic *chef-server-url* (env :chef-server-url))
 ;;

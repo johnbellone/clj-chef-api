@@ -21,5 +21,5 @@
        "svUuPHrtf/Fd44GipsnTOFAXRvXHtDfr3RHma37aAg=="))
 
 (deftest encryption-test
-  (is (str/replace #"\n" "" from-ruby)
-      (encrypt "foobar" (read-pem "test/fixtures/client.pem"))))
+  (is (= (str/replace from-ruby #"\n" "")
+         (encrypt "foobar" (read-pem "test/fixtures/client.pem")))))
