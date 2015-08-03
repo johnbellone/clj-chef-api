@@ -11,10 +11,10 @@
 
 (def default-headers
   "Common headers that are the same with each request."
-  {:Content-Type "application/json"
-   :Accept "application/json"
-   :X-Chef-Version "12.2.0"
-   :X-Ops-Sign "algorithm=sha1;version=1.0;"})
+  {"Content-Type" "application/json"
+   "Accept" "application/json"
+   "X-Chef-Version" "12.2.0"
+   "X-Ops-Sign" "algorithm=sha1;version=1.0;"})
 
 (def ^:dynamic *chef-server-url*
   "URL to the Chef Server API."
@@ -29,7 +29,7 @@
   string."
   [token]
   (letfn [(header-n [n s]
-            [(keyword (str "X-Ops-Authorization-" (inc n)))
+            [(str "X-Ops-Authorization-" (inc n))
              (str/join s)])]
     (into {} (map-indexed header-n (partition-all 59 token)))))
 
@@ -37,10 +37,10 @@
   "Create the X-Ops-Autherization-N headers by signing the canonical header
   information. Returns a map of the headers with these keys added."
   [method secret-key
-   {path    :Path
-    content :X-Ops-Content-Hash
-    time    :X-Ops-Timestamp
-    user    :X-Ops-UserId
+   {path "Path"
+    content "X-Ops-Content-Hash"
+    time "X-Ops-Timestamp"
+    user "X-Ops-UserId"
     :or {path "/"}
     :as request-headers}]
   (let [canonical-headers
@@ -58,12 +58,13 @@
   [method {:keys [client-name client-key method host body] :as options}]
   (log/debug options)
   (let [signing-key (crypto/read-pem client-key)
+        body (or body "")
         headers (merge default-headers
                        (:headers options)
-                       {:Host host
-                        :X-Chef-UserId client-name
-                        :X-Ops-Timestamp (time/now)
-                        :X-Content-Hash (crypto/digest body)})]
+                       {"Host" host
+                        "X-Chef-UserId" client-name
+                        "X-Ops-Timestamp" (time/now)
+                        "X-Content-Hash" (crypto/digest body)})]
     (merge headers
            (make-authorization-headers method signing-key headers))))
 
@@ -85,20 +86,22 @@
      ~@body))
 
 (defn request
-  ([endpoint] (request :get endpoint))
+  ([endpoint] (request "get" endpoint))
   ([method endpoint] (request method endpoint {}))
   ([method endpoint {:keys [data query body client-name client-key] :as options}]
    (set-logger!)
    (log/debug method endpoint options)
-   (let [method (str/upper-case method)
-         url (clojure.java.io/as-url (str "https://" *chef-server-url* "/" *chef-organization*))
+   (let [method (str/lower-case (str method))
+         host *chef-server-url*
+         url (clojure.java.io/as-url (str "https://" host "/organizations/" *chef-organization*))
          client-name (or client-name (env :chef-client-name))
          client-key (or client-key (env :chef-client-key))
          headers (make-request-headers method (merge options {:client-name client-name
-                                                              :client-key client-key}))]
+                                                              :client-key client-key
+                                                              :host host}))]
      (log/debug options headers)
-     @(http/request {:url url
-                     :method method
+     @(http/request {:url (str url)
+                     :method (keyword method)
                      :headers headers
-                     :query-params (or query nil)
-                     :body (or body nil)}))))
+                     :query-params (or query {})
+                     :body (or body "")}))))
