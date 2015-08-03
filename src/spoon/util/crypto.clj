@@ -1,4 +1,4 @@
-(ns chef-api-client.util.crypto
+(ns spoon.util.crypto
   (:require
     [clojure.data.codec.base64 :as b64]
     [pandect.algo.sha1 :as algo])
@@ -47,6 +47,7 @@
   "Read private key from PEM file and convert to a form usable by JCE. Can be
   passed to the encrypt function in this namespace."
   [path]
+  (init-providers)
   (let [{:keys [exponent modulus]} (into {} (seq (bean (pem->bc-pkey path))))
         factory (KeyFactory/getInstance "RSA")
         spec (RSAPrivateKeySpec. modulus exponent)]
