@@ -36,7 +36,7 @@
 (defn- make-authorization-headers
   "Create the X-Ops-Autherization-N headers by signing the canonical header
   information. Returns a map of the headers with these keys added."
-  [method secret-key
+  [verb secret-key
    {path "Path"
     content "X-Ops-Content-Hash"
     time "X-Ops-Timestamp"
@@ -44,7 +44,7 @@
     :or {path "/"}
     :as request-headers}]
   (let [canonical-headers
-        (str "Method:" method \newline
+        (str "Method:" (str/upper-case verb) \newline
              "Hashed Path:" (crypto/digest path) \newline
              "X-Ops-Content-Hash:" content \newline
              "X-Ops-Timestamp" time \newline
@@ -55,18 +55,19 @@
 
 (defn- make-request-headers
   "Create the headers necessary for creating a new request to the server api."
-  [method {:keys [client-name client-key method host body] :as options}]
+  [verb {:keys [client-name client-key host body] :as options}]
   (log/debug options)
+  (println verb)
   (let [signing-key (crypto/read-pem client-key)
         body (or body "")
         headers (merge default-headers
                        (:headers options)
                        {"Host" host
                         "X-Chef-UserId" client-name
-                        "X-Ops-Timestamp" (time/now)
+                        "X-Ops-Timestamp" (str (time/now))
                         "X-Content-Hash" (crypto/digest body)})]
     (merge headers
-           (make-authorization-headers method signing-key headers))))
+           (make-authorization-headers verb signing-key headers))))
 
 (defn- inspect-headers
   "Print out the headers from the provided map. Formatted similar to how the
@@ -87,21 +88,22 @@
 
 (defn request
   ([endpoint] (request "get" endpoint))
-  ([method endpoint] (request method endpoint {}))
-  ([method endpoint {:keys [data query body client-name client-key] :as options}]
+  ([verb endpoint] (request verb endpoint {}))
+  ([verb endpoint {:keys [data query body client-name client-key] :as options}]
    (set-logger!)
-   (log/debug method endpoint options)
-   (let [method (str/lower-case (str method))
+   (log/debug verb endpoint options)
+   (let [verb (str/lower-case (name verb))
          host *chef-server-url*
          url (clojure.java.io/as-url (str "https://" host "/organizations/" *chef-organization*))
          client-name (or client-name (env :chef-client-name))
          client-key (or client-key (env :chef-client-key))
-         headers (make-request-headers method (merge options {:client-name client-name
+         headers (make-request-headers verb (merge options {:client-name client-name
                                                               :client-key client-key
                                                               :host host}))]
      (log/debug options headers)
      @(http/request {:url (str url)
-                     :method (keyword method)
+                     :method (keyword verb)
+                     :insecure? true
                      :headers headers
                      :query-params (or query {})
                      :body (or body "")}))))
