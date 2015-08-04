@@ -1,7 +1,7 @@
-(ns chef-api-client.util.crypto-test
+(ns spoon.util.crypto-test
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
-            [chef-api-client.util.crypto :refer :all]))
+            [spoon.util.crypto :refer :all]))
 
 (use-fixtures :once (fn [f] (init-providers) (f)))
 
