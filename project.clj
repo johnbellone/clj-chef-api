@@ -21,4 +21,5 @@
                                org.bouncycastle/bcprov-jdk15on]]
                  [org.bouncycastle/bcpkix-jdk15on "1.52"]
                  [clj-logging-config "1.9.12"]]
-  :profiles {:uberjar {:aot :all}})
+  :profiles {:uberjar {:aot :all}
+             :dev {:source-paths ["dev"] }})
