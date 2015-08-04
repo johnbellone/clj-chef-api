@@ -33,22 +33,31 @@
              (str/join s)])]
     (into {} (map-indexed header-n (partition-all 59 token)))))
 
+(defn canonicalize-request
+  "Create canonical headers for sigining"
+  [{:keys [http-method path body timestamp user-id]}]
+  (str "Method:" (str/upper-case http-method) \newline
+       "Hashed Path:" (crypto/digest path) \newline
+       "X-Ops-Content-Hash:" (crypto/digest body) \newline
+       "X-Ops-Timestamp:" timestamp \newline
+       "X-Ops-UserId:" user-id \newline))
+
 (defn- make-authorization-headers
   "Create the X-Ops-Autherization-N headers by signing the canonical header
   information. Returns a map of the headers with these keys added."
-  [verb secret-key
+  [verb body secret-key
    {path "Path"
-    content "X-Ops-Content-Hash"
     time "X-Ops-Timestamp"
     user "X-Ops-UserId"
     :or {path "/"}
     :as request-headers}]
   (let [canonical-headers
-        (str "Method:" (str/upper-case verb) \newline
-             "Hashed Path:" (crypto/digest path) \newline
-             "X-Ops-Content-Hash:" content \newline
-             "X-Ops-Timestamp" time \newline
-             "X-Ops-UserId:" user \newline)]
+        (canonicalize-request
+          {:http-method verb
+           :path path
+           :body body
+           :timestamp time
+           :user-id user})]
     (split-x-auth (-> canonical-headers
                       (crypto/encrypt secret-key)
                       (str/trim-newline)))))
@@ -64,10 +73,9 @@
                        (:headers options)
                        {"Host" host
                         "X-Chef-UserId" client-name
-                        "X-Ops-Timestamp" (str (time/now))
-                        "X-Content-Hash" (crypto/digest body)})]
+                        "X-Ops-Timestamp" (str (time/now))})]
     (merge headers
-           (make-authorization-headers verb signing-key headers))))
+           (make-authorization-headers verb body signing-key headers))))
 
 (defn- inspect-headers
   "Print out the headers from the provided map. Formatted similar to how the
