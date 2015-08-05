@@ -121,4 +121,4 @@
                          :query-params (or query {})
                          :body (or body "")})
          :body
-         (json/parse-string)))))
+         (json/parse-string true)))))
