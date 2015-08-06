@@ -61,6 +61,17 @@
     (merge headers (make-authorization-headers options))))
 
 (defn api-request
+  "Make a request using the chef server api.
+
+  Required parameters:
+    :method      - http method for the endpoint
+    :path        - endpoint's url path
+    :chef-host   - hostname of the node running the chef-server
+    :client-name - client name string for the connecting api user
+    :client-key  - path to pem file containing the clients private key
+
+  Will return the parsed json data upon success, otherwise raises an exception
+  with any http errors."
   [{:keys [method path chef-host body query timestamp]
     :or {body "", query "", timestamp (format-time)}
     :as request}]
@@ -69,19 +80,28 @@
                   (assoc request
                          :method (name method)
                          :body body
-                         :timestamp timestamp))]
-    (-> @(http/request
+                         :timestamp timestamp))
+
+        {:keys [status body] :as result}
+        @(http/request
            {:url (format "https://%s/%s" chef-host path)
             :method method
             :insecure? true
             :headers (log/spy :debug headers)
             :query-params query
-            :body body})
-        (:body)
-        (json/parse-string true))))
+            :body body})]
+    (if (= status 200)
+      (-> result (:body) (json/parse-string true))
+      (throw (ex-info "Chef API error" result)))))
 
-(defn get-nodes [org & [options]]
-  (api-request (merge options {:method :get, :path (format "/organizations/%s/nodes" org)})))
+(defn client-info
+  "Create options map w/ api client required information. Take the chef-host
+  url as a string, the name of the chef client, and a path to the pem file
+  containing the client's private key.
+  
+  Pass the returned map as the options to the api functions."
+  [c n k]
+  {:chef-host c
+   :client-name n
+   :client-key k})
 
-(defn get-node [org node & [options]]
-  (api-request (merge options {:method :get, :path (format "/organizations/%s/nodes/%s" org node)})))
