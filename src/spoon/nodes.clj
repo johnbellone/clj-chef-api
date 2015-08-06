@@ -1,22 +1,14 @@
 (ns spoon.nodes
   (:require [spoon.core :as client]))
 
-(comment "Fix me: Use new spoon.core/api-request api"
-  (defn list-nodes []
-    (client/request "nodes"))
+(defn get-nodes [org & [options]]
+  (client/api-request
+    (merge options {:method :get, :path (format "/organizations/%s/nodes" org)})))
 
-  (defn get-node
-    [hostname]
-    (client/request :get (format "nodes/%s" hostname)))
+(defn get-node [org node & [options]]
+  (client/api-request
+    (merge options {:method :get, :path (format "/organizations/%s/nodes/%s" org node)})))
 
-  (defn create-node
-    [hostname & params]
-    (client/request :post (format "nodes/%s" hostname) params))
-
-  (defn delete-node
-    [hostname]
-    (client/request :delete (format "nodes/%s" hostname)))
-
-  (defn edit-node
-    [hostname & params]
-    (client/request :put (format "nodes/%s" hostname) params)))
+(defn delete-node [org node & [options]]
+  (client/api-request
+    (merge options {:method :delete, :path (format "/organizations/%s/nodes/%s" org node)})))
