@@ -26,7 +26,7 @@
     (into {} (map-indexed header-n (partition-all 60 token)))))
 
 (defn canonicalize-request
-  "Create canonical headers for sigining"
+  "Create canonical headers for signing"
   [{:keys [method path body timestamp client-name]}]
   (str "Method:"             (str/upper-case method) \newline
        "Hashed Path:"        (crypto/digest path) \newline
@@ -60,7 +60,7 @@
                         "X-Ops-Content-Hash" (crypto/digest body)})]
     (merge headers (make-authorization-headers options))))
 
-(defn api-request
+(defn raw-api-request
   "Make a request using the chef server api.
 
   Required parameters:
@@ -105,3 +105,13 @@
    :client-name n
    :client-key k})
 
+(defn api-request
+  "Convenience function on top of raw-api-request. Takes the http method as a
+  keyword, along with an endpoint pattern and a list of path parameters. These
+  latter parameters are interolated into the url as per format. Also, takes
+  additional options to pass along to raw-api-request."
+  [method endpoint path-args & [options]]
+  (raw-api-request
+    (merge options
+           {:method method
+            :path (apply format endpoint path-args)})))

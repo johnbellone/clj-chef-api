@@ -2,13 +2,10 @@
   (:require [spoon.core :as client]))
 
 (defn get-nodes [org & [options]]
-  (client/api-request
-    (merge options {:method :get, :path (format "/organizations/%s/nodes" org)})))
+  (client/api-request :get "/organizations/%s/nodes" [org] options))
 
 (defn get-node [org node & [options]]
-  (client/api-request
-    (merge options {:method :get, :path (format "/organizations/%s/nodes/%s" org node)})))
+  (client/api-request :get "/organizations/%s/nodes/%s" [org node] options))
 
 (defn delete-node [org node & [options]]
-  (client/api-request
-    (merge options {:method :delete, :path (format "/organizations/%s/nodes/%s" org node)})))
+  (client/api-request :delete "/organizations/%s/nodes/%s" [org node] options))
