@@ -1,8 +1,8 @@
 (ns spoon.data
   (:require [spoon.core :as client]))
 
-(defn get-data [org bag & [options]]
-  (if bag
+(defn get-data [org & [options]]
+  (if-let [bag (or (:bag options) false)]
     (client/api-request :get "/organizations/%s/data/%s" [org bag] options)
     (client/api-request :get "/organizations/%s/data" [org] options)))
 
