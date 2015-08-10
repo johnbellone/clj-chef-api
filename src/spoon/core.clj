@@ -98,7 +98,7 @@
   "Create options map w/ api client required information. Take the chef-host
   url as a string, the name of the chef client, and a path to the pem file
   containing the client's private key.
-  
+
   Pass the returned map as the options to the api functions."
   [c n k]
   {:chef-host c
@@ -113,5 +113,7 @@
   [method endpoint path-args & [options]]
   (raw-api-request
     (merge options
+           (when (map? (:body options))
+             {:body (json/generate-string (:body options))})
            {:method method
             :path (apply format endpoint path-args)})))
