@@ -2,7 +2,8 @@
   (:require [spoon.core :as client]))
 
 (defn get-nodes [org & [options]]
-  (client/api-request :get "/organizations/%s/nodes" [org] options))
+  (let [nodes (client/api-request :get "/organizations/%s/nodes" [org] options)]
+    (map name (keys nodes))))
 
 (defn get-node [org node & [options]]
   (client/api-request :get "/organizations/%s/nodes/%s" [org node] options))

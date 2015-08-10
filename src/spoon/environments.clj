@@ -5,7 +5,8 @@
   (client/api-request :get "/organizations/%s/environments") [org] options)
 
 (defn get-environment-nodes [org environment & [options]]
-  (client/api-request :get "/organizations/%s/environments/%s/nodes" [org environment] options))
+  (let [nodes (client/api-request :get "/organizations/%s/environments/%s/nodes" [org environment] options)]
+    (map name (keys nodes))))
 
 (defn get-environment-cookbooks [org environment & [options]]
   (client/api-request :get "/organizations/%s/environments/%s/cookbooks" [org environment] options))
