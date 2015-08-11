@@ -17,7 +17,7 @@
 (defn create-user
   [name & [options]]
   (let [data (merge {}
-                    {:admin (or (:admin options) false)}
-                    (when-let [public-key (or (:public-key options) false)]
+                    {:admin (:admin options false)}
+                    (when-let [public-key (:public-key options false)]
                       {:public_key public-key}))]
     (client/api-request :post "/users" (merge options {:body data}))))
