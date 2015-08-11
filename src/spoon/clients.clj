@@ -11,8 +11,8 @@
 
 (defn create-client
   [org name & [options]]
-  (let [data {:body {:name name (or (:admin options) false)}}]
-    (client/api-request :post "/organizations/%s/clients" [org] (merge options data))))
+  (let [data {:name name :admin (:admin options false)}]
+    (client/api-request :post "/organizations/%s/clients" [org] (assoc options :body data))))
 
 (defn delete-client
   [org name & [options]]
