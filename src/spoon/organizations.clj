@@ -31,11 +31,11 @@
 (defn update-organization-user-key
   [org key-name & [options]]
   (let [data (merge {}
-                    (when-let [public-key (or (:public-key options) nil)]
+                    (when-let [public-key (:public-key options false)]
                       {:public_key public-key})
-                    (when-let [expiry (or (:expiration-date options) nil)]
+                    (when-let [expiry (:expiration-date options false)]
                       {:expiration_date expiry})
-                    (when-let [new-name (or (:key-name options) nil)]
+                    (when-let [new-name (:key-name options false)]
                       {:name new-name}))]
     (if-not (= {} data)
       (client/api-request :put "/organizations/%s/users/%s/keys/%s" [org user-name key-name]
