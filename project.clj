@@ -1,6 +1,6 @@
 (defproject com.bloomberg.inf/spoon "0.2.0-SNAPSHOT"
   :description "Chef Server API client written in Clojure."
-  :url "https://github.com/johnbellone/clj-spoon"
+  :url "https://github.com/johnbellone/spoon"
   :license {:name "Apache 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :uberjar-name "spoon.jar"

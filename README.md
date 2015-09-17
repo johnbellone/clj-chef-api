@@ -1,4 +1,5 @@
-# clj-spoon [![Build Status](https://travis-ci.org/johnbellone/clj-spoon.svg)](https://travis-ci.org/johnbellone/clj-spoon)
+# clj-spoon
+[![Build Status](https://travis-ci.org/johnbellone/spoon.svg)](https://travis-ci.org/johnbellone/spoon)
 
 [Chef Server API][1] client written in [Clojure][2].
 
