@@ -1,7 +1,7 @@
 (ns spoon.core
   (:gen-class)
-  (:use clj-logging-config.log4j)
-  (:require [clojure.string :as str]
+  (:require [clj-logging-config.log4j :refer :all]
+            [clojure.string :as str]
             [clojure.java.io :as io]
             [clojure.tools.logging :as log]
             [cheshire.core :as json]

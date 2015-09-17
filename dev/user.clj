@@ -1,7 +1,7 @@
 (ns user
-  (:use [spoon.core]
-        [spoon.nodes])
-  (:require [cheshire.core :as json]
+  (:require [spoon.core :refer :all]
+            [spoon.nodes :refer :all]
+            [cheshire.core :as json]
             [clojure.pprint :refer :all]
             [clojure.set :as set]
             [clojure.test :refer [run-tests run-all-tests]]
@@ -18,6 +18,6 @@
      ~@body))
 
 (defn flip-node-environment
-  "Modifies an existing node's environment."
+  "Modifies an existing node's environment to the one specified."
   [org node environment]
   (spoon.nodes/update-node-environment org node environment *client-config*))
