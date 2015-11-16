@@ -1,12 +1,10 @@
 language: clojure
-script: 
-  - lein test
-jdk:
-  - openjdk7
-  - oraclejdk7
-  - oraclejdk8
-branches:
-  only:
-    - master
+sudo: false
 notifications:
-  slack: blpsi:eHp3Czg42iGzaTgG8sAFeD9v
+  slack: bloomberg-rnd:eHp3Czg42iGzaTgG8sAFeD9v
+script: lein test
+after_success: lein deploy clojars
+env:
+  global:
+  - secure: YcG+/D2OcJsPA+LYwRYM+QTZxlsmzzKGDmX3izHD5SX2Gm9KT6bfVd2DnEdu1VFb+x2tI5mPKRM1zsKzhH2168y3A5olpXcQYwW/x1saSDUlDgwpbnW7WzKqEvbZYPJpMMGuov3XVXNNNX4u535QPMX82yI1b/h/n+56lRjQmvg=
+  - secure: Gr3Tbo61MqwYuOgM1hiAKk7Jd6OhjddGXvkPArOv166TCyd1kTnwgBm6XZ5rD6DPEmphIjbPocEoMx4/E8usRxg9WBXC8AgfISzNvsq4/yzlFOKWP0Xs8X8xPgh1Ihpis090XAUKlQo2StgwhcTTIlabvBlcHVk4ANs0SDdEZyE=

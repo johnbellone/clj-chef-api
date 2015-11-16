@@ -16,6 +16,8 @@
                                org.bouncycastle/bcprov-jdk15on]]
                  [org.bouncycastle/bcpkix-jdk15on "1.52"]
                  [clj-logging-config "1.9.12"]]
+  :repositories [["clojars" {:username :env/clojars_username
+                             :password :env/clojars_password}]]
   :profiles {:uberjar {:aot :all}
              :dev {:source-paths ["dev"]
                    :dependencies [[environ "1.0.0"]]}})
