@@ -3,7 +3,7 @@ sudo: false
 notifications:
   slack: bloomberg-rnd:eHp3Czg42iGzaTgG8sAFeD9v
 script: lein test
-after_success: lein deploy clojars
+after_success: lein deploy 
 env:
   global:
   - secure: YcG+/D2OcJsPA+LYwRYM+QTZxlsmzzKGDmX3izHD5SX2Gm9KT6bfVd2DnEdu1VFb+x2tI5mPKRM1zsKzhH2168y3A5olpXcQYwW/x1saSDUlDgwpbnW7WzKqEvbZYPJpMMGuov3XVXNNNX4u535QPMX82yI1b/h/n+56lRjQmvg=
