@@ -10,6 +10,5 @@ env:
   - secure: Gr3Tbo61MqwYuOgM1hiAKk7Jd6OhjddGXvkPArOv166TCyd1kTnwgBm6XZ5rD6DPEmphIjbPocEoMx4/E8usRxg9WBXC8AgfISzNvsq4/yzlFOKWP0Xs8X8xPgh1Ihpis090XAUKlQo2StgwhcTTIlabvBlcHVk4ANs0SDdEZyE=
 jdk:
   - openjdk7
-  - openjdk8
   - oraclejdk7
   - oraclejdk8
