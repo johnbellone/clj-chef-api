@@ -9,7 +9,7 @@ your current username and home directory. These can be overriden using
 environment variables (*CHEF_SERVER_HOST*, *CHEF_CLIENT_NAME* and
 *CHEF_CLIENT_KEY*).
 ```clojure
-user=> (println *client-info*)
+user=> (println *client-config*)
 {:chef-host manage.chef.io, :client-name jbellone, :client-key /Users/jbellone/.chef/jbellone.pem}
 nil
 ```
