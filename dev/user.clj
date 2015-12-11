@@ -1,6 +1,9 @@
 (ns user
   (:require [spoon.core :refer :all]
             [spoon.nodes :refer :all]
+            [spoon.environments :refer :all]
+            [spoon.organizations :refer :all]
+            [spoon.search :as search]
             [cheshire.core :as json]
             [clojure.pprint :refer :all]
             [clojure.set :as set]
