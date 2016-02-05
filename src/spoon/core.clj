@@ -90,7 +90,7 @@
             :headers (log/spy :debug headers)
             :query-params query
             :body body})]
-    (if (= status 200)
+    (if (#{200 201} status)
       (-> result (:body) (json/parse-string true))
       (throw (ex-info "Chef API error" result)))))
 
