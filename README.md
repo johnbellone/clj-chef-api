@@ -1,6 +1,8 @@
 # clj-spoon
 [![Build Status](https://travis-ci.org/johnbellone/spoon.svg)](https://travis-ci.org/johnbellone/spoon)
 
+[![Clojars Project](http://clojars.org/com.bloomberg.inf/spoon/latest-version.svg)](http://clojars.org/com.bloomberg.inf/spoon)
+
 [Chef Server API][1] client written in [Clojure][2].
 
 ## Usage
