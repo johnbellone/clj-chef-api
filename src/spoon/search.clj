@@ -10,5 +10,3 @@
 (defn get-roles [org & [options]]
   (client/api-request :get "/organizations/%s/search/role" [org] options))
 
-(defn get-users [org & [options]]
-  (client/api-request :get "/organizations/%s/search/users" [org] options))
