@@ -16,7 +16,7 @@
 
 (defn nodes
   "Search for nodes withing org. Specify a search query and pagination options
-  (rows, keys, sort) as per https://docs.chef.io/knife_search.html#syntax."
+  (rows, start, sort) as per https://docs.chef.io/knife_search.html#syntax."
   [org q pagination & [options]]
   (search-index
     {:index "node"
@@ -33,7 +33,7 @@
 
 (defn clients
   "Search for clients withing org. Specify a search query and pagination options
-  (rows, keys, sort) as per https://docs.chef.io/knife_search.html#syntax."
+  (rows, start, sort) as per https://docs.chef.io/knife_search.html#syntax."
   [org q pagination & [options]]
   (search-index
     {:index "client"
@@ -50,7 +50,7 @@
 
 (defn roles
   "Search for roless withing org. Specify a search query and pagination options
-  (rows, keys, sort) as per https://docs.chef.io/knife_search.html#syntax."
+  (rows, start, sort) as per https://docs.chef.io/knife_search.html#syntax."
   [org q pagination & [options]]
   (search-index
     {:index "role"
@@ -68,7 +68,7 @@
 
 (defn environments
   "Search for environments withing org. Specify a search query and pagination options
-  (rows, keys, sort) as per https://docs.chef.io/knife_search.html#syntax."
+  (rows, start, sort) as per https://docs.chef.io/knife_search.html#syntax."
   [org q pagination & [options]]
   (search-index
     {:index "environment"
