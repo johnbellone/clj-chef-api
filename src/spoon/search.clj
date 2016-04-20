@@ -17,18 +17,19 @@
 (defn lazy-search
   "Make a version of a search function that returns a lazy sequnce of all
   nodes, rather than taking pagination options."
-  [search nrows]
-  (fn [org q & [options]]
-    (letfn [(step [idx done pending]
-              (lazy-seq
-                (if (seq pending)
-                  (cons (first pending) (step idx false (rest pending)))
-                  (when-not done
-                    (let [more (:rows (search org q {:start idx, :rows nrows} options))]
-                      (step (+ idx nrows)
-                            (< (count more) nrows)
-                            more))))))]
-      (step 1 false []))))
+  ([search] (lazy-search search 64))
+  ([search nrows]
+   (fn [org q & [options]]
+     (letfn [(step [idx done pending]
+               (lazy-seq
+                 (if (seq pending)
+                   (cons (first pending) (step idx false (rest pending)))
+                   (when-not done
+                     (let [more (:rows (search org q {:start idx, :rows nrows} options))]
+                       (step (+ idx nrows)
+                             (< (count more) nrows)
+                             more))))))]
+       (step 1 false [])))))
 
 (defn nodes
   "Search for nodes withing org. Specify a search query and pagination options
@@ -45,7 +46,7 @@
   ^{:arglists '([org q & [opts]])
     :doc "Lazy node search, returns results of query q in org."}
   nodes-seq
-  (lazy-search nodes 64))
+  (lazy-search nodes))
 
 (defn
   ^{:deprecated "0.3.3"}
@@ -68,7 +69,7 @@
   ^{:arglists '([org q & [opts]])
     :doc "Lazy client search, returns results of query q in org."}
   clients-seq
-  (lazy-search clients 64))
+  (lazy-search clients))
 
 (defn
   ^{:deprecated "0.3.3"}
@@ -90,7 +91,7 @@
 (def roles-seq
   ^{:arglists '([org q & [opts]])
     :doc "Lazy roles search, returns results of query q in org."}
-  (lazy-search roles 64))
+  (lazy-search roles))
 
 (defn
   ^{:deprecated "0.3.3"}
@@ -113,4 +114,4 @@
   ^{:arglists '([org q & [opts]])
     :doc "Lazy environment search, returns results of query q in org."}
   environments-seq
-  (lazy-search environments 64))
+  (lazy-search environments))
