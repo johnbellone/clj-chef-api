@@ -41,7 +41,11 @@
      :pagination pagination
      :options options}))
 
-(def nodes-seq (lazy-search nodes 64))
+(def
+  ^{:arglists '([org q & [opts]])
+    :doc "Lazy node search, returns results of query q in org."}
+  nodes-seq
+  (lazy-search nodes 64))
 
 (defn
   ^{:deprecated "0.3.3"}
@@ -60,7 +64,11 @@
      :pagination pagination
      :options options}))
 
-(def clients-seq (lazy-search clients 64))
+(def
+  ^{:arglists '([org q & [opts]])
+    :doc "Lazy client search, returns results of query q in org."}
+  clients-seq
+  (lazy-search clients 64))
 
 (defn
   ^{:deprecated "0.3.3"}
@@ -79,7 +87,10 @@
      :pagination pagination
      :options options}))
 
-(def roles-seq (lazy-search roles 64))
+(def roles-seq
+  ^{:arglists '([org q & [opts]])
+    :doc "Lazy roles search, returns results of query q in org."}
+  (lazy-search roles 64))
 
 (defn
   ^{:deprecated "0.3.3"}
@@ -98,4 +109,8 @@
      :pagination pagination
      :options options}))
 
-(def environments-seq (lazy-search environments 64))
+(def
+  ^{:arglists '([org q & [opts]])
+    :doc "Lazy environment search, returns results of query q in org."}
+  environments-seq
+  (lazy-search environments 64))
