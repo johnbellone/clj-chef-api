@@ -15,8 +15,9 @@
     (client/api-request :get endpoint [org] params)))
 
 (defn lazy-search
-  "Make a version of a search function that returns a lazy sequnce of all
-  nodes, rather than taking pagination options."
+  "Internal: Make a version of a search function that returns a lazy sequnce of
+  all nodes, rather than taking pagination options. Again, prefer using the *-seq
+  functions in this namespace rathern than calling this directly."
   ([search] (lazy-search search 64))
   ([search nrows]
    (fn [org q & [options]]
