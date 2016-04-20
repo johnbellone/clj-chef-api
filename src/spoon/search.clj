@@ -14,6 +14,22 @@
         params (assoc options :query (assoc pagination :q q))]
     (client/api-request :get endpoint [org] params)))
 
+(defn lazy-search
+  "Make a version of a search function that returns a lazy sequnce of all
+  nodes, rather than taking pagination options."
+  [search nrows]
+  (fn [org q & [options]]
+    (letfn [(step [idx done pending]
+              (lazy-seq
+                (if (seq pending)
+                  (cons (first pending) (step idx false (rest pending)))
+                  (when-not done
+                    (let [more (:rows (search org q {:start idx, :rows nrows} options))]
+                      (step (+ idx nrows)
+                            (< (count more) nrows)
+                            more))))))]
+      (step 1 false []))))
+
 (defn nodes
   "Search for nodes withing org. Specify a search query and pagination options
   (rows, start, sort) as per https://docs.chef.io/knife_search.html#syntax."
@@ -24,6 +40,8 @@
      :q q
      :pagination pagination
      :options options}))
+
+(def nodes-seq (lazy-search nodes 64))
 
 (defn
   ^{:deprecated "0.3.3"}
@@ -42,6 +60,8 @@
      :pagination pagination
      :options options}))
 
+(def clients-seq (lazy-search clients 64))
+
 (defn
   ^{:deprecated "0.3.3"}
   get-clients
@@ -59,12 +79,13 @@
      :pagination pagination
      :options options}))
 
+(def roles-seq (lazy-search roles 64))
+
 (defn
   ^{:deprecated "0.3.3"}
   get-roles
   [org & [options]]
   (client/api-request :get "/organizations/%s/search/role" [org] options))
-
 
 (defn environments
   "Search for environments withing org. Specify a search query and pagination options
@@ -76,3 +97,5 @@
      :q q
      :pagination pagination
      :options options}))
+
+(def environments-seq (lazy-search environments 64))
