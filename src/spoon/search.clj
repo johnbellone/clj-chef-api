@@ -32,20 +32,27 @@
                              more))))))]
        (step 1 false [])))))
 
-(defn nodes
-  "Search for nodes withing org. Specify a search query and pagination options
-  (rows, start, sort) as per https://docs.chef.io/knife_search.html#syntax."
-  [org q pagination & [options]]
-  (search-index
-    {:index "node"
-     :org org
-     :q q
-     :pagination pagination
-     :options options}))
+(defmacro make-search
+  "Create a new search of index type. Creates both pagination enabled and lazy-seq versions."
+  [sym index]
+  `(do
+    (defn ~sym
+      ~(format
+         "Search for %s within org. Specify a search query and pagination options
+         (rows, start, sort) as per https://docs.chef.io/knife_search.html#syntax."
+         sym)
+      [org# q# pagination# & [options#]]
+      (search-index
+        {:index ~index
+         :org org#
+         :q q#
+         :pagination pagination#
+         :options options#}))
+    (def ^{:arglists '([org q & [opts]])
+           :doc ~(format "Lazy search for %s, returns results of query q in org." ~index)}
+      ~(symbol (str sym "-seq")) (lazy-search ~sym))))
 
-(def ^{:arglists '([org q & [opts]])
-       :doc "Lazy node search, returns results of query q in org."}
-  nodes-seq (lazy-search nodes))
+(make-search nodes "node")
 
 (defn
   ^{:deprecated "0.3.3"}
@@ -53,20 +60,7 @@
   [org & [options]]
   (client/api-request :get "/organizations/%s/search/client" [org] options))
 
-(defn clients
-  "Search for clients withing org. Specify a search query and pagination options
-  (rows, start, sort) as per https://docs.chef.io/knife_search.html#syntax."
-  [org q pagination & [options]]
-  (search-index
-    {:index "client"
-     :org org
-     :q q
-     :pagination pagination
-     :options options}))
-
-(def ^{:arglists '([org q & [opts]])
-       :doc "Lazy client search, returns results of query q in org."}
-  clients-seq (lazy-search clients))
+(make-search clients "client")
 
 (defn
   ^{:deprecated "0.3.3"}
@@ -74,20 +68,7 @@
   [org & [options]]
   (client/api-request :get "/organizations/%s/search/client" [org] options))
 
-(defn roles
-  "Search for roless withing org. Specify a search query and pagination options
-  (rows, start, sort) as per https://docs.chef.io/knife_search.html#syntax."
-  [org q pagination & [options]]
-  (search-index
-    {:index "role"
-     :org org
-     :q q
-     :pagination pagination
-     :options options}))
-
-(def ^{:arglists '([org q & [opts]])
-       :doc "Lazy roles search, returns results of query q in org."}
-  roles-seq (lazy-search roles))
+(make-search roles "role")
 
 (defn
   ^{:deprecated "0.3.3"}
@@ -95,17 +76,4 @@
   [org & [options]]
   (client/api-request :get "/organizations/%s/search/role" [org] options))
 
-(defn environments
-  "Search for environments withing org. Specify a search query and pagination options
-  (rows, start, sort) as per https://docs.chef.io/knife_search.html#syntax."
-  [org q pagination & [options]]
-  (search-index
-    {:index "environment"
-     :org org
-     :q q
-     :pagination pagination
-     :options options}))
-
-(def ^{:arglists '([org q & [opts]])
-       :doc "Lazy environment search, returns results of query q in org."}
-  environments-seq (lazy-search environments))
+(make-search environments "environment")
