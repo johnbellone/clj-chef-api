@@ -30,7 +30,7 @@
                        (step (+ idx nrows)
                              (< (count more) nrows)
                              more))))))]
-       (step 1 false [])))))
+       (step 0 false [])))))
 
 (defmacro make-search
   "Create a new search of index type. Creates both pagination enabled and lazy-seq versions."
