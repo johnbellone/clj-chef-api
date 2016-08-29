@@ -12,12 +12,14 @@
   {:pre [(#{"node" "client" "role" "environment" "policyfiles"} index)]}
   (let [endpoint (str "/organizations/%s/search/" index)
         params (assoc options :query (assoc pagination :q q))]
-    (client/api-request :get endpoint [org] params)))
+    (if-let [attributes (:attributes options)]
+      (client/api-request :post endpoint [org] (merge params {:body attributes}))
+      (client/api-request :get endpoint [org] params))))
 
 (defn lazy-search
   "Internal: Make a version of a search function that returns a lazy sequnce of
   all nodes, rather than taking pagination options. Again, prefer using the *-seq
-  functions in this namespace rathern than calling this directly."
+  functions in this namespace rather than calling this directly."
   ([search] (lazy-search search 64))
   ([search nrows]
    (fn [org q & [options]]
