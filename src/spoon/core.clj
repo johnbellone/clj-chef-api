@@ -90,8 +90,9 @@
             :headers (log/spy :debug headers)
             :query-params query
             :body body})]
-    (if (#{200 201} status)
-      (-> result (:body) (json/parse-string true))
+    (condp get status
+      #{200 201} (-> result (:body) (json/parse-string true))
+      #{404} ::not-found
       (throw (ex-info "Chef API error" result)))))
 
 (defn client-info
