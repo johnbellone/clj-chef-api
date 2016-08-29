@@ -1,4 +1,4 @@
-(defproject com.bloomberg.inf/spoon "0.3.4-SNAPSHOT"
+(defproject com.bloomberg.inf/spoon "0.3.5-SNAPSHOT"
   :description "Chef Server API client written in Clojure."
   :url "https://github.com/johnbellone/spoon"
   :license {:name "Apache 2.0"
